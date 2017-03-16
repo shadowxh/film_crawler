@@ -24,9 +24,10 @@ def is_chinese(uchar):
 	else:return False;
 
 def do_request(url):
+	time.sleep(2);
 	try_times=0;
 	while True:
-		r=requests.get(url=url,params={},headers=headers);
+		r=requests.get(url=url,params={},headers=headers,timeout=60);
                 r.encoding='gb2312';
                 if r.ok==True:break;
 		try_times+=1;
@@ -47,14 +48,13 @@ def error_log(message):
 	err_log.close();
 	return;
 
-for class_index in range(0,len(film_class_en)):
+for class_index in range(16,len(film_class_en)):
 	#get all the films in a class
 	films_in_a_class=[];
 	page_cnt=get_page_count_in_a_class(class_index);
 	#print page_cnt;
 	
 	for page_num in range(1,page_cnt+1):
-		#time.sleep(1);
 		print "class:",class_index,"page_num:",page_num;
 		#get all the films in a page
 		page_string="index";
@@ -69,17 +69,17 @@ for class_index in range(0,len(film_class_en)):
 			tbody=tbodys[i];
 			film_info=[];
 			a_in_tbody=tbody.find_all("a");
-			if len(a_in_tbody)!=2:
+			if len(a_in_tbody)<=1:
 				err_msg="[class_index:"+str(class_index)+"page_num:"+str(page_num)+"tbody:"+str(i)+"]:no film title\n";
-				error_log(err_msg);
+				#error_log(err_msg);
 				continue;
 			film_info=a_in_tbody[1];
 			film_info=[film_info["title"],film_info["href"]];
 			
 			font_in_tbody=tbody.find_all("font");
-                        if len(font_in_tbody)!=2:
+                        if len(font_in_tbody)<=1:
                                 err_msg="[class_index:"+str(class_index)+"page_num:"+str(page_num)+"tbody:"+str(i)+"]:no film_date or score\n";
-                       		error_log(err_msg);
+                       		#error_log(err_msg);
 				continue;
 			film_date=font_in_tbody[0].string;film_date=film_date.strip();
 			film_score=font_in_tbody[1].string;film_score=film_score.strip();
@@ -87,13 +87,12 @@ for class_index in range(0,len(film_class_en)):
 			films_in_a_class.append(film_info);#film_info=[title,href,date,score]
 			cn+=1;
 		print "films in one page:",cn;
-	
-	_file=open("./films/"+film_class_en[class_index],"a+");
+
+	_file=open("./films/"+film_class_en[class_index],"w");
 	for film in films_in_a_class:
 		tmp="";
 		for info in film:
-			tmp+=info+"\n";
+			tmp+=info.encode('utf-8')+"\n";
 		tmp+="\n";
-		_file.write(tmp.encode('gb2312'));
+		_file.write(tmp);
 	_file.close();
-	break;
