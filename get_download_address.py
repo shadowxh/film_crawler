@@ -74,6 +74,10 @@ def get_download_address(line):
 	r=do_request(url);
 	soup=BeautifulSoup(r.text,'lxml');
 	zoom=soup.find(id='Zoom');
+
+	if type(zoom)=='NoneType':
+		print r.text;
+		exit();
 	imgs=zoom.find_all('img');
 	film_info.append(str(len(imgs)));
 	for img in imgs:

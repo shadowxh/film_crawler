@@ -54,16 +54,19 @@ def provide_one_page_ip(start_page):
 			all_ip.append(ip_port);
 
 	result=[];
+	cn=0;
 	for i in all_ip:
+		cn+=1;
 		if test_ip(url,{"http":i}):
 			result.append(i);
-			print i+" is ok";
+			print str(cn)+" "+i+" is ok";
 		else:
-			print i+" failed";
+			print str(cn)+" "+i+" failed";
 	return result;
 
 def provide_ip(start_page):
 	valid_ip=[];
-	valid_ip.extend(provide_one_page_ip(1));
 	valid_ip.extend(provide_one_page_ip(start_page));
+	if start_page!=1:
+		valid_ip.extend(provide_one_page_ip(1));
 	return valid_ip;
