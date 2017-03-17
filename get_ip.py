@@ -10,7 +10,6 @@ headers = {
 	#'content-type': 'application/json',
 	'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
 }
-proxies={"http":"http://117.90.5.235:9000","https":"https://221.219.210.36:9000","socks5":"221.219.210.36:9000"};
 domain="http://www.xicidaili.com/nn/";
 url="http://www.dy2018.com";
 def do_request(url):
@@ -28,34 +27,43 @@ def do_request(url):
         return r;
 
 def test_ip(url,proxies):
+	try_cnt=0;
 	try:
-		r=requests.get(url=url,proxies=proxies,headers=headers,timeout=5);
-		r.encoding='gb2312';
+		while True:
+			r=requests.get(url=url,proxies=proxies,headers=headers,timeout=5);
+			r.encoding='gb2312';
+			if r.ok==True:break;
+			try_cnt+=1;
+			if try_cnt>=3:return False;
 		return True;
 	except Exception as e:
 		return False;
 
-all_ip=[];
-for i in range(1,2):
-	r=do_request(domain+str(i));
-	soup=BeautifulSoup(r.text,"lxml");
-	ip_in_one_page=soup.find_all('td',text=re.compile("[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*"));
-	print i,"  ",len(ip_in_one_page);
-	for ip in ip_in_one_page:
-		ip_port=ip.string.encode('utf-8');
-		ip=ip.next_sibling;
-		while ip.name!="td":ip=ip.next_sibling;
-		ip_port+=":"+ip.string.encode('utf-8');
-		all_ip.append(ip_port);
+def provide_one_page_ip(start_page):
+	all_ip=[];
+	for i in range(start_page,start_page+1):
+		r=do_request(domain+str(i));
+		soup=BeautifulSoup(r.text,"lxml");
+		ip_in_one_page=soup.find_all('td',text=re.compile("[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*"));
+		print i,"  ",len(ip_in_one_page);
+		for ip in ip_in_one_page:
+			ip_port=ip.string.encode('utf-8');
+			ip=ip.next_sibling;
+			while ip.name!="td":ip=ip.next_sibling;
+			ip_port+=":"+ip.string.encode('utf-8');
+			all_ip.append(ip_port);
 
-result=[];
-for i in all_ip:
-	if test_ip(url,{"http":i}):
-		result.append(i);
-		print i+" is ok";
-	else:
-		print i+" failed";
+	result=[];
+	for i in all_ip:
+		if test_ip(url,{"http":i}):
+			result.append(i);
+			print i+" is ok";
+		else:
+			print i+" failed";
+	return result;
 
-_file=open("ip_table.txt","w");
-for i in result:_file.write(i+"\n");
-_file.close();
+def provide_ip(start_page):
+	valid_ip=[];
+	valid_ip.extend(provide_one_page_ip(1));
+	valid_ip.extend(provide_one_page_ip(start_page));
+	return valid_ip;

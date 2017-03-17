@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import time
 import re
 import random
+import get_ip
 headers = {
 	#'content-type': 'application/json',
 	'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
@@ -13,21 +14,50 @@ headers = {
 proxies={"http":"106.46.136.164:808",};
 domain="http://www.dy2018.com";
 rootdir="./films";
+ip_list=[];
+ip_pointer=-1;
+start_page=1;
+def init_ip_list(start):
+	global ip_list,ip_pointer,proxies;
+	
+	print "ip_list has been all used,so get more ip.";
+	ip_list=get_ip.provide_ip(start);
+	if len(ip_list)==0:
+		print "no valid ip";
+		exit();
+	
+	proxies={"http":ip_list[0]};
+	ip_pointer=0;
+	return;
+	
+def change_ip():
+	global start_page,ip_list,ip_pointer,proxies;
+	if ip_pointer==(len(ip_list)-1):
+		start_page+=1;
+		init_ip_list(start_page);
+		return;
+	ip_pointer+=1;
+	proxies={"http":ip_list[ip_pointer]};
+	print "change ip to "+ip_list[ip_pointer];
+	return;
 
 def do_request(url):
 	global proxies;
-	sleep_time=2+2*random.random();
-        time.sleep(sleep_time);
-        try_times=0;
-        while True:
-                r=requests.get(url=url,params={},proxies=proxies,headers=headers,timeout=60);
-                r.encoding='gb2312';
-                if r.ok==True:break;
-                try_times+=1;
-                if try_times>=20:
-                        print "[try too many times]:\n"+url;
-                        exit();
-        return r;
+        time.sleep(1);
+	while True:
+        	try_times=0;
+		try:
+        		while True:
+                		r=requests.get(url=url,params={},proxies=proxies,headers=headers,timeout=30);
+                		r.encoding='gb2312';
+                		if r.ok==True:break;
+                		try_times+=1;
+                		if try_times>=5:
+                        		print "[try too many times]:\n"+url;
+                        		change_ip();
+			return r;
+		except Exception as e:
+                	change_ip();
 
 def error_log(message):
         err_log=open("error_log.txt","a+");
@@ -59,6 +89,7 @@ def get_download_address(line):
 	return film_info;
 	
 for parent,dirs,files in os.walk(rootdir):
+	init_ip_list(1);
 	for file_name in files:
 		print file_name;
 		links_in_a_file=[];
