@@ -39,6 +39,24 @@ def test_ip(url,proxies):
 	except Exception as e:
 		return False;
 
+def test_ip_gaoni(url,proxies):
+        try_cnt=0;
+        try:
+                while True:
+                        r=requests.get(url=url,proxies=proxies,headers=headers,timeout=5);
+                        r.encoding='gb2312';
+                        if r.ok==True:break;
+                        try_cnt+=1;
+                        if try_cnt>=3:return False;
+		soup=BeautifulSoup(r.text,'lxml');
+		ip_from_chinaz=soup.find_all('dd',text=re.compile("[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*"));
+		if len(ip_from_chinaz)==0:return False;
+		ip_from_chinaz=ip_from_chinaz.string.encode('utf-8');
+		ip_from_chinaz=ip_from_chinaz.strip();
+                return (ip_from_chinaz==proxies['http'][:proxies['http'].index(':')]);#if the proxy ip is really niming
+        except Exception as e:
+                return False;
+
 def provide_one_page_ip(start_page):
 	all_ip=[];
 	for i in range(start_page,start_page+1):
@@ -57,11 +75,9 @@ def provide_one_page_ip(start_page):
 	cn=0;
 	for i in all_ip:
 		cn+=1;
-		if test_ip(url,{"http":i}):
+		if test_ip(url,{"http":i}) and test_ip_gaoni("http://ip.chinaz.com/",{"http":i}):
 			result.append(i);
 			print str(cn)+" "+i+" is ok";
-			
-			break;
 		else:
 			print str(cn)+" "+i+" failed";
 	return result;

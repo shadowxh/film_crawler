@@ -17,14 +17,16 @@ rootdir="./films";
 ip_list=[];
 ip_pointer=-1;
 start_page=1;
-def init_ip_list(start):
-	global ip_list,ip_pointer,proxies;
+def init_ip_list():
+	global start_page,ip_list,ip_pointer,proxies;
 	
 	print "ip_list has been all used,so get more ip.";
-	ip_list=get_ip.provide_ip(start);
+	ip_list=get_ip.provide_ip(start_page);
 	if len(ip_list)==0:
-		print "no valid ip";
-		exit();
+		print "no valid ip,will check the next page";
+		start_page+=1;
+		init_ip_list(start_page);
+		return;
 	
 	proxies={"http":ip_list[0]};
 	ip_pointer=0;
@@ -34,13 +36,11 @@ def change_ip():
 	global start_page,ip_list,ip_pointer,proxies;
 	if ip_pointer==(len(ip_list)-1):
 		start_page+=1;
-		init_ip_list(start_page);
+		init_ip_list();
 		return;
 	ip_pointer+=1;
 	proxies={"http":ip_list[ip_pointer]};
 	print "change ip to "+ip_list[ip_pointer];
-	if ip_list[ip_pointer]=="221.216.94.77:808":
-		change_ip();
 	return;
 
 def do_request(url):
