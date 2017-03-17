@@ -10,7 +10,7 @@ headers = {
 	#'content-type': 'application/json',
 	'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
 }
-proxies={"http","http://192.118.72.53:80"};
+proxies={"http":"http://117.90.5.235:9000","https":"https://221.219.210.36:9000","socks5":"221.219.210.36:9000"};
 domain="http://www.dy2018.com";
 rootdir="./films";
 
@@ -19,7 +19,7 @@ def do_request(url):
         time.sleep(sleep_time);
         try_times=0;
         while True:
-                r=requests.get(url=url,params={},headers=headers,timeout=60);
+                r=requests.get(url=url,params={},proxies=proxies,headers=headers,timeout=60);
                 r.encoding='gb2312';
                 if r.ok==True:break;
                 try_times+=1;
