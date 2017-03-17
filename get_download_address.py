@@ -5,17 +5,18 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import re
-
+import random
 headers = {
 	#'content-type': 'application/json',
 	'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
 }
-
+proxies={"http","http://192.118.72.53:80"};
 domain="http://www.dy2018.com";
 rootdir="./films";
 
 def do_request(url):
-        time.sleep(2);
+	sleep_time=2+2*random.random();
+        time.sleep(sleep_time);
         try_times=0;
         while True:
                 r=requests.get(url=url,params={},headers=headers,timeout=60);
