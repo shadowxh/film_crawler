@@ -60,6 +60,8 @@ def provide_one_page_ip(start_page):
 		if test_ip(url,{"http":i}):
 			result.append(i);
 			print str(cn)+" "+i+" is ok";
+			
+			break;
 		else:
 			print str(cn)+" "+i+" failed";
 	return result;

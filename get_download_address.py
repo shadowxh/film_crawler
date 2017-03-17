@@ -39,6 +39,8 @@ def change_ip():
 	ip_pointer+=1;
 	proxies={"http":ip_list[ip_pointer]};
 	print "change ip to "+ip_list[ip_pointer];
+	if ip_list[ip_pointer]=="221.216.94.77:808":
+		change_ip();
 	return;
 
 def do_request(url):
@@ -73,11 +75,14 @@ def get_download_address(line):
 	url=domain+line;
 	r=do_request(url);
 	soup=BeautifulSoup(r.text,'lxml');
-	zoom=soup.find(id='Zoom');
-
-	if type(zoom)=='NoneType':
+	zoom=soup.find_all(id='Zoom');
+	
+	print r.status_code;
+	if len(zoom)==0:
 		print r.text;
 		exit();
+	
+	zoom=zoom[0];
 	imgs=zoom.find_all('img');
 	film_info.append(str(len(imgs)));
 	for img in imgs:
