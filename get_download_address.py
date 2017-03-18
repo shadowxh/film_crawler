@@ -25,7 +25,7 @@ def init_ip_list():
 	if len(ip_list)==0:
 		print "no valid ip,will check the next page";
 		start_page+=1;
-		init_ip_list(start_page);
+		init_ip_list();
 		return;
 	
 	proxies={"http":ip_list[0]};
@@ -67,26 +67,27 @@ def error_log(message):
         err_log.close();
         return;
 
-def has_attr_thunderpid(tag):
-	return (tag.name=='a') and (tag.has_attr('thunderpid'));
 
 def get_download_address(line):
 	film_info=[line[3:-5]];
 	url=domain+line;
-	r=do_request(url);
-	soup=BeautifulSoup(r.text,'lxml');
-	zoom=soup.find_all(id='Zoom');
+	while True:
+		r=do_request(url);
+		soup=BeautifulSoup(r.text,'lxml');
+		zoom=soup.find_all(id='Zoom');
 	
-	print r.status_code;
-	if len(zoom)==0:
-		print r.text;
-		exit();
+		print r.status_code;
+		if len(zoom)==0:
+			print "can't find zoom,retry..."
+			continue;
+		break;
 	
 	zoom=zoom[0];
 	imgs=zoom.find_all('img');
 	film_info.append(str(len(imgs)));
 	for img in imgs:
 		film_info.append(img['src'].encode('utf-8'));
+	
 	download_links=zoom.find_all(text=re.compile(".*ftp:.*"));
 	film_info.append(str(len(download_links)));
 	for link in download_links:
@@ -96,9 +97,10 @@ def get_download_address(line):
 	if (len(imgs)<2) or (len(download_links)==0):
 		error_log(line+" "+str(len(imgs))+" "+str(len(download_links)));
 	return film_info;
-	
+
+
 for parent,dirs,files in os.walk(rootdir):
-	init_ip_list(1);
+	init_ip_list();
 	for file_name in files:
 		print file_name;
 		links_in_a_file=[];

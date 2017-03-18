@@ -43,7 +43,7 @@ def test_ip_gaoni(url,proxies):
         try_cnt=0;
         try:
                 while True:
-                        r=requests.get(url=url,proxies=proxies,headers=headers,timeout=5);
+                        r=requests.get(url=url,proxies=proxies,headers=headers,timeout=20);
                         r.encoding='gb2312';
                         if r.ok==True:break;
                         try_cnt+=1;
@@ -51,10 +51,15 @@ def test_ip_gaoni(url,proxies):
 		soup=BeautifulSoup(r.text,'lxml');
 		ip_from_chinaz=soup.find_all('dd',text=re.compile("[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*"));
 		if len(ip_from_chinaz)==0:return False;
-		ip_from_chinaz=ip_from_chinaz.string.encode('utf-8');
+		ip_from_chinaz=ip_from_chinaz[0].string.encode('utf-8');
 		ip_from_chinaz=ip_from_chinaz.strip();
+		
+		if ip_from_chinaz!=proxies['http'][:proxies['http'].index(':')]:
+			print proxies['http'][:proxies['http'].index(':')]+" not gaoni";
                 return (ip_from_chinaz==proxies['http'][:proxies['http'].index(':')]);#if the proxy ip is really niming
         except Exception as e:
+		print "connect to ip.chinaz error";
+		print e;
                 return False;
 
 def provide_one_page_ip(start_page):
