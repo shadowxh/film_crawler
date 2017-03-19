@@ -45,7 +45,6 @@ def change_ip():
 
 def do_request(url):
 	global proxies;
-        time.sleep(1);
 	while True:
         	try_times=0;
 		try:
@@ -56,7 +55,7 @@ def do_request(url):
                 		try_times+=1;
                 		if try_times>=5:
                         		print "[try too many times]:\n"+url;
-                        		change_ip();
+                        		return r;
 			return r;
 		except Exception as e:
                 	change_ip();
@@ -69,14 +68,14 @@ def error_log(message):
 
 
 def get_download_address(line):
-	film_info=[line[3:-5]];
+	film_info=[line];
 	url=domain+line;
 	while True:
 		r=do_request(url);
 		soup=BeautifulSoup(r.text,'lxml');
 		zoom=soup.find_all(id='Zoom');
-	
-		print r.status_code;
+		if r.ok==False:
+			return film_info;
 		if len(zoom)==0:
 			print "can't find zoom,retry..."
 			continue;
@@ -102,17 +101,22 @@ def get_download_address(line):
 for parent,dirs,files in os.walk(rootdir):
 	init_ip_list();
 	for file_name in files:
+		if ".link" in file_name:continue;
 		print file_name;
 		links_in_a_file=[];
 		_file=open(os.path.join(parent,file_name),"r");
 		for line in _file:
-			if line[0:3]!="/i/":continue;
+			if line[0:3]=="/i/":continue;
+			if (line[-6:-1]!=".html") and (line[-5:-1]!=".php"):continue;
 			links_in_a_file.append(line[:-1]);
 		_file.close();
 		
-		_file=open(os.path.join(parent,file_name+'.link'),"w");
+		_file=open(os.path.join(parent,file_name+'.link'),"a+");
 		for link in links_in_a_file:
 			info=get_download_address(link);
+			if len(info)<=1:
+				print "try "+link+" too many times,give up.";
+				error_log(link+" giveup");
 			for i in info:
 				_file.write(i+"\n");
 		
